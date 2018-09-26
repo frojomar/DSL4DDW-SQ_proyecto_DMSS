@@ -1,0 +1,468 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Documentation for the exampleMM Ecore meta-model</title>
+<meta name="description" content="exampleMM Documentation">
+</head>
+<body>
+<h1>DISEÑO Y MODELADO DE SISTEMAS SOFTWARE </h1><br>
+<h1>2017-2018</h1><br>
+<h1>DSL4DDW+SQ</h1>
+
+
+
+<h3>Autor/es: </h3>
+<h3>Ruben Rentero Trejo, Francisco Javier Rojo Martín</h3><br>
+
+<h3>Grupo ID: </h3>
+<h3></h3><br>
+
+<h1>2 Sintaxis Abstracta de DSL4DDW+SQ </h1>
+
+<h2>2.1 Descripción de los conceptos del dominio</h2>
+
+
+	<span style="background-color:LightGrey">EClass : SitioWeb</span>  <br>
+	<p>Elemento Root del metamodelo que define el sitio que se va a modelar. Contiene tanto las páginas web a diseñar como las entidades que se utilizarán en ellas.</p>
+	<b>Atributos</b><br>
+	<ul>
+		<li><b>name</b> : EString </li>
+		<li><b>image</b> : EString </li>
+	</ul>
+	<b>Referencias</b><br>
+	<ul>
+		<li>0..-1 entidadesModelo : Entidad </li>
+		<li>0..-1 paginasweb : PaginaWeb </li>
+	</ul>
+	<b>Restricciones</b><br>
+	<ul>
+			<li> Restricción: <b>sitio_debe_tener_nombre</b> : not self.name.oclIsUndefined() and self.name<>'' </li><br>
+			<li> Restricción: <b>sitio_debe_tener_image</b> : not self.image.oclIsUndefined() and self.image<>'' </li><br>
+			<li> Restricción: <b>no_mismo_nombre_entidades</b> : self.entidadesModelo->forAll(e1, e2: Entidad | e1=e2 or e1.name<>e2.name) </li><br>
+			<li> Restricción: <b>no_mismo_nombre_paginas</b> : self.paginasweb ->forAll(p1, p2: PaginaWeb | p1=p2 or p1.name<>p2.name) </li><br>
+			<li> Restricción: <b>una_pagina_home</b> : self.paginasweb->select(oclIsTypeOf(PaginaHome))->size()=1 </li><br>
+			<li> Restricción: <b>no_dos_indice_misma_entidad</b> : self.paginasweb->select(oclIsTypeOf(Indice)).oclAsType(Indice)->forAll(p1, p2: Indice| p1=p2 or p1.entidad<>p2.entidad) </li><br>
+			<li> Restricción: <b>no_dos_detalle_misma_entidad</b> : self.paginasweb->select(oclIsTypeOf(Detalle)).oclAsType(Detalle)->forAll(p1, p2: Detalle| p1=p2 or p1.entidad<>p2.entidad) </li><br>
+			<li> Restricción: <b>no_dos_creacion_misma_entidad</b> : self.paginasweb->select(oclIsTypeOf(Creacion)).oclAsType(Creacion)->forAll(p1, p2: Creacion| p1=p2 or p1.entidad<>p2.entidad) </li><br>
+			<li> Restricción: <b>no_dos_borrado_misma_entidad</b> : self.paginasweb->select(oclIsTypeOf(Borrado)).oclAsType(Borrado)->forAll(p1, p2: Borrado| p1=p2 or p1.entidad<>p2.entidad) </li><br>
+			<li> Restricción: <b>no_dos_crud_misma_entidad</b> : self.paginasweb->select(oclIsTypeOf(PaginaCRUD)).oclAsType(PaginaCRUD)->forAll(p1, p2: PaginaCRUD| p1=p2 or p1.entidad<>p2.entidad) </li><br>
+			<li> Restricción: <b>no_crud_y_indice</b> : self.paginasweb->select(oclIsTypeOf(PaginaCRUD)).oclAsType(PaginaCRUD)->forAll(pC: PaginaCRUD |
+						self.paginasweb->select(oclIsTypeOf(Indice)).oclAsType(Indice)->forAll(pI: Indice| pC.entidad<>pI.entidad)) </li><br>
+			<li> Restricción: <b>no_crud_y_detalle</b> : self.paginasweb->select(oclIsTypeOf(PaginaCRUD)).oclAsType(PaginaCRUD)->forAll(pC: PaginaCRUD |
+						self.paginasweb->select(oclIsTypeOf(Detalle)).oclAsType(Detalle)->forAll(pD: Detalle| pC.entidad<>pD.entidad)) </li><br>
+			<li> Restricción: <b>no_crud_y_creacion</b> : self.paginasweb->select(oclIsTypeOf(PaginaCRUD)).oclAsType(PaginaCRUD)->forAll(pC: PaginaCRUD |
+						self.paginasweb->select(oclIsTypeOf(Creacion)).oclAsType(Creacion)->forAll(pCreacion: Creacion| pC.entidad<>pCreacion.entidad)) </li><br>
+			<li> Restricción: <b>no_crud_y_borrado</b> : self.paginasweb->select(oclIsTypeOf(PaginaCRUD)).oclAsType(PaginaCRUD)->forAll(pC: PaginaCRUD |
+						self.paginasweb->select(oclIsTypeOf(Borrado)).oclAsType(Borrado)->forAll(pB: Borrado| pC.entidad<>pB.entidad)) </li><br>
+			<li> Restricción: <b>al_menos_un_cuestionario</b> : self.paginasweb->select(oclIsTypeOf(Cuestionario))->size()>=1 </li><br>
+			<li> Restricción: <b>al_menos_una_encuesta</b> : self.paginasweb->select(oclIsTypeOf(Encuesta))->size()>=1 </li><br>
+			<li> Restricción: <b>indice_implica_detalle</b> : self.paginasweb->select(oclIsTypeOf(Indice)).oclAsType(Indice)->forAll(pI: Indice| 
+						self.paginasweb->select(oclIsTypeOf(Detalle)).oclAsType(Detalle)->exists(pD: Detalle| pI.entidad=pD.entidad)) </li><br>
+			<li> Restricción: <b>detalle_implica_indice</b> : self.paginasweb->select(oclIsTypeOf(Detalle)).oclAsType(Detalle)->forAll(pD: Detalle| 
+						self.paginasweb->select(oclIsTypeOf(Indice)).oclAsType(Indice)->exists(pI: Indice| pD.entidad=pI.entidad)) </li><br>
+			<li> Restricción: <b>al_menos_una_pagina_con_red_social</b> : self.paginasweb->select(conexionredsocial->size()>=1)->size()>=1 </li><br>
+			<li> Restricción: <b>home_enlaza_cruds_y_indices</b> : self.paginasweb->select(oclIsTypeOf(Indice) or oclIsTypeOf(PaginaCRUD))->
+			forAll(p | self.paginasweb->select(oclIsTypeOf(PaginaHome)).enlaces->select(e|e.oclIsTypeOf(EnlaceInterno))->
+				select(e| e.oclAsType(EnlaceInterno).referencia=p)->size()>0
+			) </li><br>
+			<li> Restricción: <b>creacion_implica_indice</b> : self.paginasweb->select(oclIsTypeOf(Creacion)).oclAsType(Creacion)->forAll(pC: Creacion| 
+						self.paginasweb->select(oclIsTypeOf(Indice)).oclAsType(Indice)->exists(pI: Indice| pC.entidad=pI.entidad)) </li><br>
+			<li> Restricción: <b>borrado_implica_detalle</b> : self.paginasweb->select(oclIsTypeOf(Borrado)).oclAsType(Borrado)->forAll(pB: Borrado| 
+						self.paginasweb->select(oclIsTypeOf(Detalle)).oclAsType(Detalle)->exists(pD: Detalle| pB.entidad=pD.entidad)) </li><br>
+			<li> Restricción: <b>ref_muchas_implica_no_muchas</b> : self.entidadesModelo->forAll(e:Entidad | e.referencias->select(muchas=true)->
+			forAll(r:Referencia| r.destino.referencias->exists(r2:Referencia|r2.destino=e and r2.muchas=false))) </li><br>
+			<li> Restricción: <b>ref_no_muchos_unica_en_cada_entidad</b> : self.entidadesModelo->forAll(e:Entidad | e.referencias->select(muchas=false)->
+			forAll(r1,r2 | r1=r2 or r1.destino<>r2.destino)) </li><br>
+			<li> Restricción: <b>prohibidas_ref_no_muchos_unica_bidireccional</b> : self.entidadesModelo->forAll(e:Entidad | e.referencias->select(muchas=false)->
+			forAll(r:Referencia| not r.destino.referencias->exists(r2:Referencia|r2.destino=e and r2.muchas=false))) </li><br>
+			<li> Restricción: <b>paginas_todas_alcanzables</b> : self.paginasweb->select(oclIsTypeOf(Indice) or oclIsTypeOf(PaginaCRUD) or oclIsKindOf(PaginaEncForm))->
+			forAll(p|self.paginasweb.enlaces->select(oclIsTypeOf(EnlaceInterno)).oclAsType(EnlaceInterno)->
+				select(referencia=p)->size()>=1) </li><br>
+
+	</ul>
+
+	
+	<span style="background-color:LightGrey">EClass : PaginaWeb</span>   (abstract)<br>
+	<p>Elemento página web que se traducirá en una página web real en HTML.
+Una página web puede convertirse en la página Home del sitio, una página de entidad, o un formulario de recogida de datos.
+Cada página web contiene una serie de enlaces (internos o externos) y da la opción de establecer una conexión hacia una red social.</p>
+	<b>Atributos</b><br>
+	<ul>
+		<li><b>name</b> : EString </li>
+	</ul>
+	<b>Referencias</b><br>
+	<ul>
+		<li>0..-1 conexionredsocial : ConexionRedSocial </li>
+		<li>0..-1 enlaces : Enlace </li>
+	</ul>
+	<b>Restricciones</b><br>
+	<ul>
+			<li> Restricción: <b>nombre_sin_espacios</b> : self.name=self.name.replaceAll(' ','') </li><br>
+
+	</ul>
+
+	
+	<span style="background-color:LightGrey">EClass : Entidad</span>  <br>
+	<p>Representación de un objeto o un concepto del mundo real. Serán clases que poseen un nombre para identificarlas junto con una serie de atributos y métodos.</p>
+	<b>Atributos</b><br>
+	<ul>
+		<li><b>name</b> : EString </li>
+	</ul>
+	<b>Referencias</b><br>
+	<ul>
+		<li>0..-1 referencias : Referencia </li>
+		<li>0..-1 atributos : Atributo </li>
+	</ul>
+	<b>Restricciones</b><br>
+	<ul>
+			<li> Restricción: <b>name_es_string</b> : self.atributos->select(name='name')->forAll(type=ATRTYPE::String) </li><br>
+			<li> Restricción: <b>un_atributo_name</b> : self.atributos->select(name='name')->size()=1 </li><br>
+			<li> Restricción: <b>id_es_integer</b> : self.atributos->select(name=('id_'.concat(self.name)))->forAll(type=ATRTYPE::Integer) </li><br>
+			<li> Restricción: <b>un_atributo_id</b> : self.atributos->select(name=('id_'.concat(self.name)))->size()=1 </li><br>
+			<li> Restricción: <b>image_es_string</b> : self.atributos->select(name='image')->forAll(type=ATRTYPE::String) </li><br>
+			<li> Restricción: <b>un_atributo_image</b> : self.atributos->select(name='image')->size()=1 </li><br>
+			<li> Restricción: <b>nombres_atributos_distintos</b> : self.atributos->forAll(a1, a2: Atributo | a1=a2 or a1.name<>a2.name) </li><br>
+			<li> Restricción: <b>nombre_sin_espacios</b> : self.name=self.name.replaceAll(' ','') </li><br>
+
+	</ul>
+
+	
+	<span style="background-color:LightGrey">EClass : Referencia</span>  <br>
+	<p>Indica la relación entre una clase origen y un destino. Se identificará con un nombre y posee un atributo para indicar si la cardinalidad del destino es 1 o N.</p>
+	<b>Atributos</b><br>
+	<ul>
+		<li><b>name</b> : EString </li>
+		<li><b>muchas</b> : EBoolean </li>
+	</ul>
+	<b>Referencias</b><br>
+	<ul>
+		<li>1..1 destino : Entidad </li>
+	</ul>
+	<b>Restricciones</b><br>
+	<ul>
+			<li> Restricción: <b>nombre_sin_espacios</b> : self.name=self.name.replaceAll(' ','') </li><br>
+			<li> Restricción: <b>nombre_empieza_minusculas</b> : self.name.substring(1,1).toLower()=self.name.substring(1,1) </li><br>
+
+	</ul>
+
+	
+	<span style="background-color:LightGrey">EClass : Atributo</span>  <br>
+	<p>Representan variables de instancia, definidas con un tipo y un nombre. Cada objeto particular tendrá valores distintos para estas variables.</p>
+	<b>Atributos</b><br>
+	<ul>
+		<li><b>type</b> : ATRTYPE </li>
+		<li><b>name</b> : EString </li>
+	</ul>
+	<b>Referencias</b><br>
+	<ul>
+	</ul>
+	<b>Restricciones</b><br>
+	<ul>
+			<li> Restricción: <b>nombre_sin_espacios</b> : self.name=self.name.replaceAll(' ','') </li><br>
+			<li> Restricción: <b>nombre_empieza_minusculas</b> : self.name.substring(1,1).toLower()=self.name.substring(1,1) </li><br>
+
+	</ul>
+
+	
+	<span style="background-color:LightGrey">EClass : Indice</span>  extends PaginaEntidad <br>
+	<p>Hereda de PaginaEntidad. Representa la página índice donde se podrán encontrar todas las referencias al resto de páginas para facilitar su ubicación y fácil acceso.</p>
+	<b>Atributos</b><br>
+	<ul>
+	</ul>
+	<b>Referencias</b><br>
+	<ul>
+	</ul>
+	<b>Restricciones</b><br>
+	<ul>
+
+	</ul>
+
+	
+	<span style="background-color:LightGrey">EClass : PaginaCRUD</span>  extends PaginaEntidad <br>
+	<p>Representa una página CRUD que se utiliza para las conexiones con la base de datos. Al ser CRUD, las opciones que se ofrecen son: Create, Read, Update y Delete. Al especificar este tipo de página se crean las 4 páginas CRUD al mismo tiempo.</p>
+	<b>Atributos</b><br>
+	<ul>
+	</ul>
+	<b>Referencias</b><br>
+	<ul>
+	</ul>
+	<b>Restricciones</b><br>
+	<ul>
+
+	</ul>
+
+	
+	<span style="background-color:LightGrey">EClass : PaginaEncForm</span>  extends PaginaWeb  (abstract)<br>
+	<p>Página de recogida de datos introducidos por el usuario. Es una clase abstracta que se convierte en una Encuesta o en un Formulario. Está compuesta por una serie de preguntas que se realizan al usuario.</p>
+	<b>Atributos</b><br>
+	<ul>
+	</ul>
+	<b>Referencias</b><br>
+	<ul>
+		<li>0..-1 preguntas : Pregunta </li>
+	</ul>
+	<b>Restricciones</b><br>
+	<ul>
+
+	</ul>
+
+	
+	<span style="background-color:LightGrey">EClass : PaginaHome</span>  extends PaginaWeb <br>
+	<p>Página principal del Sitio Web (index). Será la primera página a la que accederá un usuario al entrar al sitio.</p>
+	<b>Atributos</b><br>
+	<ul>
+	</ul>
+	<b>Referencias</b><br>
+	<ul>
+	</ul>
+	<b>Restricciones</b><br>
+	<ul>
+
+	</ul>
+
+	
+	<span style="background-color:LightGrey">EClass : ConexionRedSocial</span>  <br>
+	<p>Contiene la información necesaria para establecer una conexión hacia una Red Social. Posee un atributo \"tag\" para identificar la red social destino, así como un campo \"script\" donde se introduce el script particular predefinido que ofrecen las distintas redes sociales para facilitar su acceso.</p>
+	<b>Atributos</b><br>
+	<ul>
+		<li><b>script</b> : EString </li>
+		<li><b>tag</b> : EString </li>
+	</ul>
+	<b>Referencias</b><br>
+	<ul>
+	</ul>
+	<b>Restricciones</b><br>
+	<ul>
+
+	</ul>
+
+	
+	<span style="background-color:LightGrey">EClass : Pregunta</span>   (abstract)<br>
+	<p>Clase abstracta que se materializa en una pregunta corta, una pregunta de elección múltiple o una pregunta de verdadero/falso.</p>
+	<b>Atributos</b><br>
+	<ul>
+		<li><b>numOrden</b> : EInt </li>
+		<li><b>content</b> : EString </li>
+	</ul>
+	<b>Referencias</b><br>
+	<ul>
+	</ul>
+	<b>Restricciones</b><br>
+	<ul>
+
+	</ul>
+
+	
+	<span style="background-color:LightGrey">EClass : PreguntaCorta</span>  extends Pregunta <br>
+	<p>Se ofrece un texto con una pregunta al usuario y se da la opción de predefinir una solución a dicha pregunta.</p>
+	<b>Atributos</b><br>
+	<ul>
+		<li><b>solucion</b> : EString </li>
+	</ul>
+	<b>Referencias</b><br>
+	<ul>
+	</ul>
+	<b>Restricciones</b><br>
+	<ul>
+
+	</ul>
+
+	
+	<span style="background-color:LightGrey">EClass : PreguntaElegir</span>  extends Pregunta <br>
+	<p>Se ofrece un texto con una pregunta para el usuario. Las respuestas a dicha pregunta serán una serie de opciones de las cuales sólo se puede seleccionar una.</p>
+	<b>Atributos</b><br>
+	<ul>
+	</ul>
+	<b>Referencias</b><br>
+	<ul>
+		<li>2..-1 opciones : Opcion </li>
+	</ul>
+	<b>Restricciones</b><br>
+	<ul>
+			<li> Restricción: <b>al_menos_dos_opciones</b> : self.opciones->size()>1 </li><br>
+
+	</ul>
+
+	
+	<span style="background-color:LightGrey">EClass : PreguntaVF</span>  extends Pregunta <br>
+	<p>Se ofrece un texto con una pregunta al usuario y la respuesta será únicamente verdadero o falso.</p>
+	<b>Atributos</b><br>
+	<ul>
+		<li><b>solucion</b> : EBoolean </li>
+	</ul>
+	<b>Referencias</b><br>
+	<ul>
+	</ul>
+	<b>Restricciones</b><br>
+	<ul>
+
+	</ul>
+
+	
+	<span style="background-color:LightGrey">EClass : Encuesta</span>  extends PaginaEncForm <br>
+	<p>Representa un gráfico donde se recoge la información de los cuestionarios (puntuaciones, edades, etc.)</p>
+	<b>Atributos</b><br>
+	<ul>
+		<li><b>representacion</b> : REPTYPE </li>
+	</ul>
+	<b>Referencias</b><br>
+	<ul>
+	</ul>
+	<b>Restricciones</b><br>
+	<ul>
+
+	</ul>
+
+	
+	<span style="background-color:LightGrey">EClass : Cuestionario</span>  extends PaginaEncForm <br>
+	<p>Representa al conjunto de cuestiones o preguntas que serán contestadas por el usuario.</p>
+	<b>Atributos</b><br>
+	<ul>
+	</ul>
+	<b>Referencias</b><br>
+	<ul>
+	</ul>
+	<b>Restricciones</b><br>
+	<ul>
+			<li> Restricción: <b>respuestas_corta_definidas</b> : self.preguntas->select(oclIsTypeOf(PreguntaCorta)).oclAsType(PreguntaCorta)->
+																		forAll(not solucion.oclIsUndefined() and solucion<>'') </li><br>
+			<li> Restricción: <b>respuestas_elegir_definidas</b> : self.preguntas->select(oclIsTypeOf(PreguntaElegir)).oclAsType(PreguntaElegir)->
+																		forAll(p: PreguntaElegir| p.opciones ->forAll(correcta=false or correcta=true)) </li><br>
+			<li> Restricción: <b>respuestas_vf_definidas</b> : self.preguntas->select(oclIsTypeOf(PreguntaVF)).oclAsType(PreguntaVF)->
+																		forAll(solucion=false or solucion=true) </li><br>
+			<li> Restricción: <b>preguntas_elegir_solo_una_opcion_correcta</b> : self.preguntas->select(oclIsTypeOf(PreguntaElegir)).
+					oclAsType(PreguntaElegir)->forAll(opciones->select(correcta=true)->size()=1) </li><br>
+
+	</ul>
+
+	
+	<span style="background-color:LightGrey">EClass : Enlace</span>   (abstract)<br>
+	<p>Elemento que establece una conexión entre dos elementos del sitio web (enlace interno) o entre un elemento del sitio web y un elemento externo (enlace externo).</p>
+	<b>Atributos</b><br>
+	<ul>
+		<li><b>name</b> : EString </li>
+	</ul>
+	<b>Referencias</b><br>
+	<ul>
+	</ul>
+	<b>Restricciones</b><br>
+	<ul>
+
+	</ul>
+
+	
+	<span style="background-color:LightGrey">EClass : EnlaceExterno</span>  extends Enlace <br>
+	<p>Establece una conexión con un elemento externo al sitio web. En la URL se especifica la dirección del elemento.</p>
+	<b>Atributos</b><br>
+	<ul>
+		<li><b>url</b> : EString </li>
+	</ul>
+	<b>Referencias</b><br>
+	<ul>
+	</ul>
+	<b>Restricciones</b><br>
+	<ul>
+			<li> Restricción: <b>deben_comenzar_por_http</b> : self.url.startsWith('http') </li><br>
+
+	</ul>
+
+	
+	<span style="background-color:LightGrey">EClass : EnlaceInterno</span>  extends Enlace <br>
+	<p>Relaciona elementos pertenecientes al propio sitio web. En el campo \"referencia\" se indica la dirección destino.</p>
+	<b>Atributos</b><br>
+	<ul>
+	</ul>
+	<b>Referencias</b><br>
+	<ul>
+		<li>1..1 referencia : PaginaWeb </li>
+	</ul>
+	<b>Restricciones</b><br>
+	<ul>
+			<li> Restricción: <b>no_permitidos_a_detalle</b> : not self.referencia.oclIsTypeOf(Detalle) </li><br>
+			<li> Restricción: <b>no_permitidos_a_borrado</b> : not self.referencia.oclIsTypeOf(Borrado) </li><br>
+			<li> Restricción: <b>no_permitidos_a_home</b> : not self.referencia.oclIsTypeOf(PaginaHome) </li><br>
+
+	</ul>
+
+	
+	<span style="background-color:LightGrey">EClass : Opcion</span>  <br>
+	<p>Ofrece una descripción para detallar la opción y un atributo para especificar si es la opción correcta a la pregunta o no.</p>
+	<b>Atributos</b><br>
+	<ul>
+		<li><b>content</b> : EString </li>
+		<li><b>correcta</b> : EBoolean </li>
+	</ul>
+	<b>Referencias</b><br>
+	<ul>
+	</ul>
+	<b>Restricciones</b><br>
+	<ul>
+
+	</ul>
+
+	
+	<span style="background-color:LightGrey">EClass : Detalle</span>  extends PaginaEntidad <br>
+	<p>Lee información de la BD y la muestra en la página.</p>
+	<b>Atributos</b><br>
+	<ul>
+	</ul>
+	<b>Referencias</b><br>
+	<ul>
+	</ul>
+	<b>Restricciones</b><br>
+	<ul>
+
+	</ul>
+
+	
+	<span style="background-color:LightGrey">EClass : Borrado</span>  extends PaginaEntidad <br>
+	<p>Página donde se especifican los elementos de las entidades a borrar.</p>
+	<b>Atributos</b><br>
+	<ul>
+	</ul>
+	<b>Referencias</b><br>
+	<ul>
+	</ul>
+	<b>Restricciones</b><br>
+	<ul>
+			<li> Restricción: <b>no_permitidos_enlaces</b> : self.enlaces->size()=0 </li><br>
+			<li> Restricción: <b>no_permitidas_conexiones_redSocial</b> : self.conexionredsocial->size()=0 </li><br>
+
+	</ul>
+
+	
+	<span style="background-color:LightGrey">EClass : Creacion</span>  extends PaginaEntidad <br>
+	<p>Página que ofrece las herramientas necesarias para la creación de un nuevo elemento entidad.</p>
+	<b>Atributos</b><br>
+	<ul>
+	</ul>
+	<b>Referencias</b><br>
+	<ul>
+	</ul>
+	<b>Restricciones</b><br>
+	<ul>
+			<li> Restricción: <b>no_permitidos_enlaces</b> : self.enlaces->size()=0 </li><br>
+			<li> Restricción: <b>no_permitidas_conexiones_redSocial</b> : self.conexionredsocial->size()=0 </li><br>
+
+	</ul>
+
+	
+	<span style="background-color:LightGrey">EClass : PaginaEntidad</span>  extends PaginaWeb  (abstract)<br>
+	<p>Representa el conjunto de páginas: Creación, borrado, detalle, índice y CRUD. Esta clase abstracta se convertirá en una de ellas.</p>
+	<b>Atributos</b><br>
+	<ul>
+	</ul>
+	<b>Referencias</b><br>
+	<ul>
+		<li>1..1 entidad : Entidad </li>
+	</ul>
+	<b>Restricciones</b><br>
+	<ul>
+
+	</ul>
+
+	
+
+</body>
+</html>
